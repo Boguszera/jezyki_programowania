@@ -4,6 +4,7 @@
 #include <ctime>
 #include <string>
 #include <limits>
+#include <fstream>
 using namespace std;
 
 bool isOperator(char c){
@@ -32,7 +33,8 @@ string randomCharacters(int elements) {
                      (nextChar == ')' && (isOperator(prevChar) || openBracket <= 0)) || // Nie możemy mieć ')' po operatorze lub jeśli brakuje otwartego nawiasu
                      (isOperator(prevChar) && isOperator(nextChar)) || //przed występowaniem dwóch operatorów obok siebie
                      (isCharacter(prevChar) && isCharacter(nextChar)) || //przed występowaniem dwóch znaków (x,y,z) obok siebie
-                     (prevChar == '(' && nextChar == ')') || (prevChar == ')' && nextChar == '(') //przed pustym nawiasem (i dwoma nawiasami obok siebie)
+                     (prevChar == '(' && nextChar == ')') || (prevChar == ')' && nextChar == '(') || //przed pustym nawiasem (i dwoma nawiasami obok siebie)
+                     (expression.empty() && isOperator(nextChar)) || (expression.empty() && nextChar == ')') // na początku nie może być +-/* i )
                      ));
 
     //liczenie nawiasów
@@ -75,13 +77,17 @@ int userInput() {
     return numberOfElements;
 }
 
-void saveFile(){
-    //funkcja służąca do zapisywania pliku
+void saveFile(string expression){
+    fstream file;
+    file.open("expression.txt", ios::out);
+    file << expression;
+    file.close();
 }
 
 int main(){
     int numberOfElements = userInput();
     string expression = randomCharacters(numberOfElements);
     cout << expression;
+    saveFile(expression);
     //randomCharacters(numberOfElements);
 }
