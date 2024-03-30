@@ -31,6 +31,8 @@ string randomCharacters(int elements) {
             } while (
                      (nextChar == '(' && (prevChar == ')' || isOperator(prevChar) || prevChar == '\0') || //Nie możemy mieć '(' po ')', operatorze lub na początku
                      (nextChar == ')' && (isOperator(prevChar) || openBracket <= 0)) || // Nie możemy mieć ')' po operatorze lub jeśli brakuje otwartego nawiasu
+                     (prevChar == '(' && (isOperator(nextChar))) || // Nie możemy mieć operatora po '('
+                     //(prevChar == '(' && (isCharacter(nextChar))) || //musi być operator przed nawiasem
                      (isOperator(prevChar) && isOperator(nextChar)) || //przed występowaniem dwóch operatorów obok siebie
                      (isCharacter(prevChar) && isCharacter(nextChar)) || //przed występowaniem dwóch znaków (x,y,z) obok siebie
                      (prevChar == '(' && nextChar == ')') || (prevChar == ')' && nextChar == '(') || //przed pustym nawiasem (i dwoma nawiasami obok siebie)
@@ -47,10 +49,14 @@ string randomCharacters(int elements) {
         expression.push_back(nextChar);
         prevChar = nextChar;
     }
-    expression.append(openBracket, ')');
+    if (prevChar != '('){ //if unikający wygenerowania pustego nawiasu
+            expression.append(openBracket, ')');
+        }
 
     return expression;
     }
+
+//stworzyć funkcję, która będzie fixowała nawiasy i regulowała długość wyrażenia
 
 //funkcja s³u¿¹ca do interakcji z u¿ytkownikiem i walidacji inputa
 int userInput() {
@@ -67,8 +73,8 @@ int userInput() {
             cin.ignore(numeric_limits < streamsize >::max(), '\n' );
 
         }
-        else if(numberOfElements <= 0){
-            cout << "B³¹d! WprowadŸ liczbê wiêksz¹ od 0. " << endl;
+        else if(numberOfElements <= 3){
+            cout << "B³¹d! WprowadŸ liczbê wiêksz¹ od 3. " << endl;
         }
         else {
             success = true;
