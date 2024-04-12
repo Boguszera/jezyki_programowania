@@ -33,10 +33,12 @@ string randomCharacters(int elements) {
                      (nextChar == '(' && (prevChar == ')' || prevChar == '\0') || //Nie możemy mieć '(' po ')', operatorze lub na początku
                      (nextChar == ')' && (isOperator(prevChar) || openBracket <= 0)) || // Nie możemy mieć ')' po operatorze lub jeśli brakuje otwartego nawiasu
                      (prevChar == '(' && (isOperator(nextChar))) || // Nie możemy mieć operatora po '('
+                     (prevChar == ')' && (!isOperator(nextChar))) || // Musimy mieć operator po ')'
                      (prevChar == '(' &&  nextChar == '(') || // Nie możemy '(' obok '('
                      (nextChar == '(' && (!isOperator(prevChar))) || //musi być operator przed nawiasem
                      (isOperator(prevChar) && isOperator(nextChar)) || //przed występowaniem dwóch operatorów obok siebie
                      (isCharacter(prevChar) && isCharacter(nextChar)) || //przed występowaniem dwóch znaków (x,y,z) obok siebie
+                     (isCharacter(prevChar)) && (nextChar == ')') && (expression[i - 2] == '(') || //nie może być jednoelementowego nawiasu, np. (y)
                      (prevChar == '(' && nextChar == ')') || (prevChar == ')' && nextChar == '(') || //przed pustym nawiasem (i dwoma nawiasami obok siebie)
                      (expression.empty() && isOperator(nextChar)) || (expression.empty() && nextChar == ')') // na początku nie może być +-/* i )
                      ));
@@ -68,10 +70,12 @@ string randomCharacters(int elements) {
     if (isOperator(expression.back())){
         expression.erase(expression.length() - 1); //usuwanie ostatniego elementu, jeśli wyrażenie kończy się operatorem
     } */
+
+    /*
     if (openBracket>0){
         expression.erase(expression.length() - openBracket); //skrócenie wyrażenia o liczbę nawiasów, które chcemy dodać
         expression.append(openBracket, ')');
-    }
+    } /*
     /*
     if (prevChar != '(' || isOperator(prevChar)){ //if unikający wygenerowania pustego nawiasu oraz operatora na końcu
             expression.append(openBracket, ')');
