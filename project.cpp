@@ -53,7 +53,7 @@ string randomCharacters(int elements) {
         expression.push_back(nextChar);
         prevChar = nextChar;
     }
-    //fixownie nawiasów
+    //usuwanie elementów, jeśli na końcu jest nawias otwierający lub operator (do momentu, w którym ich nie ma)
     int deletedChars = 0;
     while ((expression.back() == '(') || isOperator(expression.back())){ //do debuggera
         if (expression.back() == '('){
@@ -62,29 +62,14 @@ string randomCharacters(int elements) {
         expression.erase(expression.length() - 1);
         deletedChars++;
         }
-    /*
-    if (expression.back() == '('){
-        expression.erase(expression.length() - 1); //usuwanie elementu, jeśli wyrażenie kończy się '('
-        openBracket--;
-        }
-    if (isOperator(expression.back())){
-        expression.erase(expression.length() - 1); //usuwanie ostatniego elementu, jeśli wyrażenie kończy się operatorem
-    } */
 
-    /*
-    if (openBracket>0){
-        expression.erase(expression.length() - openBracket); //skrócenie wyrażenia o liczbę nawiasów, które chcemy dodać
-        expression.append(openBracket, ')');
-    } /*
-    /*
-    if (prevChar != '(' || isOperator(prevChar)){ //if unikający wygenerowania pustego nawiasu oraz operatora na końcu
-            expression.append(openBracket, ')');
-        } */
+    // zamykanie nawiasów (jeśli istnieją niezamknięte)
+    for (int i = 0; i < openBracket; i++) {
+        expression.push_back(')');
+    }
 
     return expression;
     }
-
-//stworzyć funkcję, która będzie fixowała nawiasy i regulowała długość wyrażenia???
 
 //funkcja s³u¿¹ca do interakcji z u¿ytkownikiem i walidacji inputa
 int userInput() {
@@ -104,6 +89,9 @@ int userInput() {
         else if(numberOfElements <= 3){
             cout << "B³¹d! WprowadŸ liczbê wiêksz¹ od 3. " << endl;
         }
+        else if (numberOfElements % 2 == 0){
+            cout << "B³¹d! Skonsturowanie wyrażenie jest możliwe tylko przy nieparzystej ilości elementów " << endl;
+        }
         else {
             success = true;
         }
@@ -117,15 +105,29 @@ void saveFile(string expression){
     file << expression;
     file.close();
 }
+string readFile(){
+    fstream file;
+    string readExpression;
+    file.open("expression.txt", ios::in);
+    if (file.good() == false){
+        cout<< "Plik nie istnieje lub nie masz uprawnien." << endl;
+        exit(0);
+    }
+    else {
+        getline(file, readExpression);
+        file.close();
+    }
+    return readExpression;
+}
 
 //funkcja parsująca wyrażenie
 
-//funkcja robiąca odczyt z pliku
+
 
 int main(){
     int numberOfElements = userInput();
     string expression = randomCharacters(numberOfElements);
-    cout << expression;
     saveFile(expression);
-    //randomCharacters(numberOfElements);
+    string readExpression = readFile();
+    cout << readExpression;
 }
