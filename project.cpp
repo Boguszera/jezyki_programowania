@@ -6,6 +6,8 @@
 #include <limits>
 #include <fstream>
 #include <list>
+#include <stack>
+#include <unordered_map>
 using namespace std;
 
 bool isOperator(char c){
@@ -17,10 +19,10 @@ bool isCharacter(char c){
 }
 
 //funkcja losująca wyrażenie
-string randomCharacters(int elements) {
+vector<char> randomCharacters(int elements) {
     srand( time( NULL ) );
     vector<char> characters = {'x', 'y', 'z', '(', ')', '+', '-', '*', '/'};
-    string expression;
+    vector<char> expression;
     char prevChar = '\0'; //poprzedni znak
     int openBracket = 0;
 
@@ -59,7 +61,7 @@ string randomCharacters(int elements) {
         if (expression.back() == '('){
                 openBracket--;
             }
-        expression.erase(expression.length() - 1);
+        expression.pop_back();
         deletedChars++;
         }
 
@@ -99,10 +101,12 @@ int userInput() {
     return numberOfElements;
 }
 
-void saveFile(string expression){
+void saveFile(vector<char> expression){
     fstream file;
     file.open("expression.txt", ios::out);
-    file << expression;
+    for (char c : expression) {
+            file << c;
+        }
     file.close();
 }
 string readFile(){
@@ -120,14 +124,111 @@ string readFile(){
     return readExpression;
 }
 
-//funkcja parsująca wyrażenie
+tuple<int, int, int> xyzValues(){
+    int x,y,z;
+    // Pobieranie x
+    cout << "\nPodaj liczbe calkowita dla x: ";
+    while (!(cin >> x)) {
+        cout << "Podano nieprawidlowa wartosc. x musi byc liczba calkowita." << endl;
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cout << "Podaj liczbe calkowita dla x: ";
+    }
 
+    // Pobieranie y
+    cout << "Podaj liczbe calkowita dla y: ";
+    while (!(cin >> y)) {
+        cout << "Podano nieprawidlowa wartosc. y musi byc liczba calkowita." << endl;
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cout << "Podaj liczbe calkowita dla y: ";
+    }
 
+    // Pobieranie z
+    cout << "Podaj liczbe calkowita dla z: ";
+    while (!(cin >> z)) {
+        cout << "Podano nieprawidlowa wartosc. z musi byc liczba calkowita." << endl;
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cout << "Podaj liczbe calkowita dla z: ";
+    }
+    return make_tuple(x, y, z);
+}
+
+vector<char> infixToRPN(const vector<char>& infix) {
+    vector<char> rpn;
+    stack<char> operators;
+
+    for (char c : infix) {
+        if (isCharacter(c)) {
+            rpn.push_back(c);
+        } else if (isOperator(c)) {
+            while (!operators.empty() && operators.top() != '(' && ((c != '*' && c != '/') || (operators.top() != '+' && operators.top() != '-'))) {
+                rpn.push_back(operators.top());
+                operators.pop();
+            }
+            operators.push(c);
+        } else if (c == '(') {
+            operators.push(c);
+        } else if (c == ')') {
+            while (!operators.empty() && operators.top() != '(') {
+                rpn.push_back(operators.top());
+                operators.pop();
+            }
+            operators.pop(); // Usuń otwierający nawias '('
+        }
+    }
+
+    while (!operators.empty()) {
+        rpn.push_back(operators.top());
+        operators.pop();
+    }
+
+    return rpn;
+}
+
+double evaluateRPN(const vector<char>& expression, double x, double y, double z) {
+    stack<double> stack;
+
+    for (char c : expression) {
+        if (isCharacter(c)) {
+            if (c == 'x') stack.push(x);
+            else if (c == 'y') stack.push(y);
+            else if (c == 'z') stack.push(z);
+        } else if (isOperator(c)) {
+            double b = stack.top();
+            stack.pop();
+            double a = stack.top();
+            stack.pop();
+            switch (c) {
+                case '+':
+                    stack.push(a + b);
+                    break;
+                case '-':
+                    stack.push(a - b);
+                    break;
+                case '*':
+                    stack.push(a * b);
+                    break;
+                case '/':
+                    stack.push(a / b);
+                    break;
+            }
+        }
+    }
+
+    return stack.top();
+}
 
 int main(){
     int numberOfElements = userInput();
-    string expression = randomCharacters(numberOfElements);
+    int x, y, z;
+    vector<char> expression = randomCharacters(numberOfElements);
     saveFile(expression);
     string readExpression = readFile();
-    cout << readExpression;
+    cout << "WYGENEROWANE WYRAZENIE: " << readExpression;
+    tie(x, y, z) = xyzValues();
+    vector<char> rpn_expression = infixToRPN(expression);
+    double result = evaluateRPN(rpn_expression, x, y, z);
+    cout << result;
 }
