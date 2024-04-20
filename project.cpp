@@ -2,10 +2,8 @@
 #include <cstdlib>
 #include <vector>
 #include <ctime>
-#include <string>
 #include <limits>
 #include <fstream>
-#include <list>
 #include <stack>
 #include <unordered_map>
 using namespace std;
@@ -76,28 +74,26 @@ vector<char> randomCharacters(int elements) {
 //funkcja s³u¿¹ca do interakcji z u¿ytkownikiem i walidacji inputa
 int userInput() {
     int numberOfElements;
-    int isInputOk;
     bool success = false;
-    do {
-        cout << "Podaj ilosc elementow: "; //naprawic polskie znaki
-        cin >> numberOfElements;
-        isInputOk = cin.fail();
-        if (isInputOk==1) {
-            cout << "Nie podano liczby ca³kowitej" << endl;
-            cin.clear();
-            cin.ignore(numeric_limits < streamsize >::max(), '\n' );
 
-        }
-        else if(numberOfElements <= 3){
-            cout << "B³¹d! WprowadŸ liczbê wiêksz¹ od 3. " << endl;
-        }
-        else if (numberOfElements % 2 == 0){
-            cout << "B³¹d! Skonsturowanie wyrażenie jest możliwe tylko przy nieparzystej ilości elementów " << endl;
-        }
-        else {
+    do {
+        cout << "Podaj ilość elementów: ";
+        cin >> numberOfElements;
+
+        if (cin.fail()) {
+            cout << "Błąd! Wprowadzono niepoprawną wartość." << endl;
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        } else if (numberOfElements <= 3) {
+            cout << "Błąd! Wprowadź liczbę większą od 3." << endl;
+        } else if (numberOfElements % 2 == 0) {
+            cout << "Błąd! Konstrukcja wyrażenia jest możliwa tylko przy nieparzystej liczbie elementów." << endl;
+        } else {
             success = true;
         }
-    } while (success==false);
+
+    } while (!success);
+
     return numberOfElements;
 }
 
@@ -128,7 +124,7 @@ tuple<int, int, int> xyzValues(){
     int x,y,z;
     // Pobieranie x
     cout << "\nPodaj liczbe calkowita dla x: ";
-    while (!(cin >> x)) {
+    while (!(cin >> x) || cin.peek() != '\n') {
         cout << "Podano nieprawidlowa wartosc. x musi byc liczba calkowita." << endl;
         cin.clear();
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -137,7 +133,7 @@ tuple<int, int, int> xyzValues(){
 
     // Pobieranie y
     cout << "Podaj liczbe calkowita dla y: ";
-    while (!(cin >> y)) {
+    while (!(cin >> y) || cin.peek() != '\n') {
         cout << "Podano nieprawidlowa wartosc. y musi byc liczba calkowita." << endl;
         cin.clear();
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -146,7 +142,7 @@ tuple<int, int, int> xyzValues(){
 
     // Pobieranie z
     cout << "Podaj liczbe calkowita dla z: ";
-    while (!(cin >> z)) {
+    while (!(cin >> z) || cin.peek() != '\n') {
         cout << "Podano nieprawidlowa wartosc. z musi byc liczba calkowita." << endl;
         cin.clear();
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -211,6 +207,8 @@ double evaluateRPN(const vector<char>& expression, double x, double y, double z)
                     stack.push(a * b);
                     break;
                 case '/':
+                    if (b==0)
+                        throw invalid_argument("Niepoprawne wyrazenie: dzielenie przez zero");
                     stack.push(a / b);
                     break;
             }
