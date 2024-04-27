@@ -17,7 +17,7 @@ bool isCharacter(char c){
 }
 
 //funkcja losująca wyrażenie
-vector<char> randomCharacters(int elements) {
+vector<char> generateExpression(int elements) {
     srand( time( NULL ) );
     vector<char> characters = {'x', 'y', 'z', '(', ')', '+', '-', '*', '/'};
     vector<char> expression;
@@ -35,15 +35,15 @@ vector<char> randomCharacters(int elements) {
                      (prevChar == '(' && (isOperator(nextChar))) || // Nie możemy mieć operatora po '('
                      (prevChar == ')' && (!isOperator(nextChar))) || // Musimy mieć operator po ')'
                      (prevChar == '(' &&  nextChar == '(') || // Nie możemy '(' obok '('
+                     (nextChar == '(' && openBracket >= elements - i) ||
                      (nextChar == '(' && (!isOperator(prevChar))) || //musi być operator przed nawiasem
                      (isOperator(prevChar) && isOperator(nextChar)) || //przed występowaniem dwóch operatorów obok siebie
                      (isCharacter(prevChar) && isCharacter(nextChar)) || //przed występowaniem dwóch znaków (x,y,z) obok siebie
                      (isCharacter(prevChar)) && (nextChar == ')') && (expression[i - 2] == '(') || //nie może być jednoelementowego nawiasu, np. (y)
+                     //(i == elements - 1 && (nextChar == '+' || nextChar == '-' || nextChar == '*' || nextChar == '/' || nextChar == '(')) || // Nie pozwól na wylosowanie operatora lub nawiasu otwierającego na końcu
                      (prevChar == '(' && nextChar == ')') || (prevChar == ')' && nextChar == '(') || //przed pustym nawiasem (i dwoma nawiasami obok siebie)
                      (expression.empty() && isOperator(nextChar)) || (expression.empty() && nextChar == ')') // na początku nie może być +-/* i )
                      ));
-
-    //liczenie nawiasów
         if (nextChar == '(') {
                 openBracket++;
             }
@@ -53,22 +53,55 @@ vector<char> randomCharacters(int elements) {
         expression.push_back(nextChar);
         prevChar = nextChar;
     }
-    //usuwanie elementów, jeśli na końcu jest nawias otwierający lub operator (do momentu, w którym ich nie ma)
+    return expression;
+}
+
+vector<char> fixExpression(const vector<char>& expression, int elements) {
+    vector<char> fixedExpression = expression;
+    int openBracket = 0;
     int deletedChars = 0;
-    while ((expression.back() == '(') || isOperator(expression.back())){ //do debuggera
-        if (expression.back() == '('){
-                openBracket--;
-            }
-        expression.pop_back();
-        deletedChars++;
+
+    //zliczanie nawiasów
+    for (char c : fixedExpression) {
+        if (c == '(') {
+            openBracket++;
+        } else if (c == ')') {
+            openBracket--;
         }
+    }
+
+    //zrobienie miejsca na append nawiasów zamykających
+    for (int i=0; i < openBracket; i++){
+        if (fixedExpression.back() == ')'){
+            fixedExpression.erase(fixedExpression.end() - 2);
+        }
+        else if (fixedExpression.back() == '('){
+            openBracket--;
+            fixedExpression.pop_back();
+        }
+        else {
+            fixedExpression.pop_back();
+        }
+        deletedChars++;
+    }
+
+        //usuwanie elementów, jeśli na końcu jest nawias otwierający lub operator (do momentu, w którym ich nie ma)
+    while ((fixedExpression.back() == '(' || isOperator(fixedExpression.back()))) {
+        if (fixedExpression.back() == '(') {
+            openBracket--;
+        }
+        fixedExpression.pop_back();
+        deletedChars++;
+    }
+
+cout << deletedChars;
 
     // zamykanie nawiasów (jeśli istnieją niezamknięte)
     for (int i = 0; i < openBracket; i++) {
-        expression.push_back(')');
+        fixedExpression.push_back(')');
     }
 
-    return expression;
+    return fixedExpression;
     }
 
 //funkcja s³u¿¹ca do interakcji z u¿ytkownikiem i walidacji inputa
@@ -84,7 +117,7 @@ int userInput() {
             cout << "Błąd! Wprowadzono niepoprawną wartość." << endl;
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        } else if (numberOfElements <= 3) {
+        } else if (numberOfElements < 3) {
             cout << "Błąd! Wprowadź liczbę większą od 3." << endl;
         } else if (numberOfElements % 2 == 0) {
             cout << "Błąd! Konstrukcja wyrażenia jest możliwa tylko przy nieparzystej liczbie elementów." << endl;
@@ -183,7 +216,7 @@ vector<char> infixToRPN(const vector<char>& infix) {
     return rpn;
 }
 
-double evaluateRPN(const vector<char>& expression, double x, double y, double z) {
+double evaluateRPN(const vector<char>& expression, int x, int y, int z) {
     stack<double> stack;
 
     for (char c : expression) {
@@ -221,12 +254,18 @@ double evaluateRPN(const vector<char>& expression, double x, double y, double z)
 int main(){
     int numberOfElements = userInput();
     int x, y, z;
-    vector<char> expression = randomCharacters(numberOfElements);
-    saveFile(expression);
+    vector<char> expression = generateExpression(numberOfElements);
+
+    for (size_t i = 0; i < expression.size(); ++i) {
+        cout << expression[i] << " ";
+        }
+
+    vector<char> fixedExpression = fixExpression(expression, numberOfElements);
+    saveFile(fixedExpression);
     string readExpression = readFile();
     cout << "WYGENEROWANE WYRAZENIE: " << readExpression;
     tie(x, y, z) = xyzValues();
-    vector<char> rpn_expression = infixToRPN(expression);
+    vector<char> rpn_expression = infixToRPN(fixedExpression);
     double result = evaluateRPN(rpn_expression, x, y, z);
     cout << result;
 }
