@@ -114,7 +114,27 @@ int userInput() {
     int numberOfElements;
     bool success = false;
 
-    do {
+    cout << "Podaj ilosc elementow: ";
+    while (true) {
+        if (!(cin >> numberOfElements)) {
+            cout << "Podaj liczbe calkowita." << endl;
+        } else if (cin.peek() != '\n') {
+            cout << "Niedozwolone znaki, wprowadz liczbe calkowita." << endl;
+        } else if (numberOfElements < 3) {
+            cout << "Liczba musi byc wieksza/rowna 3." << endl;
+        } else if (numberOfElements % 2 == 0) {
+            cout << "Liczba musi byc nieparzysta." << endl;
+        } else {
+            break; // Wychodzimy z pętli, jeśli wszystkie warunki są spełnione.
+        }
+
+        // Czyszczenie strumienia wejściowego
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cout << "Podaj ilosc elementow: ";
+    }
+
+    /*do {
         cout << "Podaj ilosc elementow: ";
         cin >> numberOfElements;
 
@@ -130,7 +150,7 @@ int userInput() {
             success = true;
         }
 
-    } while (!success);
+    } while (!success); */
 
     return numberOfElements;
 }
