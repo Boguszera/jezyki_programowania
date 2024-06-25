@@ -26,8 +26,14 @@ vector<char> generateExpression(int elements) {
 
     for (int i=0; i<elements; i++){
             char nextChar;
+            int attempts = 0;
             do {
                 nextChar = characters[rand() % characters.size()];
+                attempts++;
+                if (attempts > 1000) {
+                cerr << "Ups... Nie można wygenerowac wyrazenia, sprobuj ponownie" << endl;
+                exit(1);
+                }
             //zabezpieczenia
             } while (
                      (nextChar == '(' && (prevChar == ')' || prevChar == '\0') || //Nie możemy mieć '(' po ')', operatorze lub na początku
@@ -42,6 +48,7 @@ vector<char> generateExpression(int elements) {
                      (isCharacter(prevChar)) && (nextChar == ')') && (expression[i - 2] == '(') || //nie może być jednoelementowego nawiasu, np. (y)
                      //(i == elements - 1 && (nextChar == '+' || nextChar == '-' || nextChar == '*' || nextChar == '/' || nextChar == '(')) || // Nie pozwól na wylosowanie operatora lub nawiasu otwierającego na końcu
                      (prevChar == '(' && nextChar == ')') || (prevChar == ')' && nextChar == '(') || //przed pustym nawiasem (i dwoma nawiasami obok siebie)
+                    (i == elements - 1 && (isOperator(nextChar) || nextChar == '(')) || // na końcu nie może być operator ani nawias otwierający
                      (expression.empty() && isOperator(nextChar)) || (expression.empty() && nextChar == ')') // na początku nie może być +-/* i )
                      ));
         if (nextChar == '(') {
@@ -59,9 +66,10 @@ vector<char> generateExpression(int elements) {
 vector<char> fixExpression(const vector<char>& expression, int elements) {
     vector<char> fixedExpression = expression;
     int openBracket = 0;
+    int closeBracket = 0;
     int deletedChars = 0;
 
-    //zliczanie nawiasów
+    // Zlicz otwarte i zamknięte nawiasy
     for (char c : fixedExpression) {
         if (c == '(') {
             openBracket++;
@@ -71,9 +79,11 @@ vector<char> fixExpression(const vector<char>& expression, int elements) {
     }
 
     //zrobienie miejsca na append nawiasów zamykających
-    for (int i=0; i < openBracket; i++){
+     for (int i=0; i < openBracket; i++){
         if (fixedExpression.back() == ')'){
-            fixedExpression.erase(fixedExpression.end() - 2);
+            openBracket++;
+            //fixedExpression.erase(fixedExpression.end() - 2);
+            fixedExpression.pop_back();
         }
         else if (fixedExpression.back() == '('){
             openBracket--;
@@ -85,16 +95,11 @@ vector<char> fixExpression(const vector<char>& expression, int elements) {
         deletedChars++;
     }
 
-        //usuwanie elementów, jeśli na końcu jest nawias otwierający lub operator (do momentu, w którym ich nie ma)
-    while ((fixedExpression.back() == '(' || isOperator(fixedExpression.back()))) {
-        if (fixedExpression.back() == '(') {
-            openBracket--;
-        }
+        //usuwanie elementów, jeśli na końcu jest operator
+     while (!fixedExpression.empty() && isOperator(fixedExpression.back())) {
         fixedExpression.pop_back();
         deletedChars++;
     }
-
-cout << deletedChars;
 
     // zamykanie nawiasów (jeśli istnieją niezamknięte)
     for (int i = 0; i < openBracket; i++) {
@@ -110,17 +115,17 @@ int userInput() {
     bool success = false;
 
     do {
-        cout << "Podaj ilość elementów: ";
+        cout << "Podaj ilosc elementow: ";
         cin >> numberOfElements;
 
         if (cin.fail()) {
-            cout << "Błąd! Wprowadzono niepoprawną wartość." << endl;
+            cout << "Error! Wprowadzono niepoprawna wartosc." << endl;
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
         } else if (numberOfElements < 3) {
-            cout << "Błąd! Wprowadź liczbę większą od 3." << endl;
+            cout << "Error! Wprowadz liczbe większa od 3." << endl;
         } else if (numberOfElements % 2 == 0) {
-            cout << "Błąd! Konstrukcja wyrażenia jest możliwa tylko przy nieparzystej liczbie elementów." << endl;
+            cout << "Error! Konstrukcja wyrazenia jest mozliwa tylko przy nieparzystej liczbie elementow." << endl;
         } else {
             success = true;
         }
@@ -256,9 +261,9 @@ int main(){
     int x, y, z;
     vector<char> expression = generateExpression(numberOfElements);
 
-    for (size_t i = 0; i < expression.size(); ++i) {
+    /*for (size_t i = 0; i < expression.size(); ++i) {
         cout << expression[i] << " ";
-        }
+        }*/
 
     vector<char> fixedExpression = fixExpression(expression, numberOfElements);
     saveFile(fixedExpression);
