@@ -6,6 +6,7 @@
 #include <fstream>
 #include <stack>
 #include <unordered_map>
+#include <set>
 using namespace std;
 
 bool isOperator(char c){
@@ -30,7 +31,7 @@ vector<char> generateExpression(int elements) {
             do {
                 nextChar = characters[rand() % characters.size()];
                 attempts++;
-                if (attempts > 1000) {
+                if (attempts > 10000) {
                 cerr << "Ups... Nie można wygenerowac wyrazenia, sprobuj ponownie" << endl;
                 exit(1);
                 }
@@ -109,6 +110,16 @@ vector<char> fixExpression(const vector<char>& expression, int elements) {
     return fixedExpression;
     }
 
+    set<char> getVariables(const vector<char>& expression) {
+    set<char> variables;
+    for (char c : expression) {
+        if (c == 'x' || c == 'y' || c == 'z') {
+            variables.insert(c);
+        }
+    }
+    return variables;
+}
+
 //funkcja s³u¿¹ca do interakcji z u¿ytkownikiem i walidacji inputa
 int userInput() {
     int numberOfElements;
@@ -178,33 +189,39 @@ string readFile(){
     return readExpression;
 }
 
-tuple<int, int, int> xyzValues(){
+tuple<int, int, int> xyzValues(const vector<char>& expression){
     int x,y,z;
+    set<char> variables = getVariables(expression);
+
     // Pobieranie x
-    cout << "\nPodaj liczbe calkowita dla x: ";
-    while (!(cin >> x) || cin.peek() != '\n') {
-        cout << "Podano nieprawidlowa wartosc. x musi byc liczba calkowita." << endl;
-        cin.clear();
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        cout << "Podaj liczbe calkowita dla x: ";
+    if (variables.count('x')){
+        cout << "\nPodaj liczbe calkowita dla x: ";
+        while (!(cin >> x) || cin.peek() != '\n') {
+            cout << "Podano nieprawidlowa wartosc. x musi byc liczba calkowita." << endl;
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Podaj liczbe calkowita dla x: ";
+        }
     }
 
-    // Pobieranie y
-    cout << "Podaj liczbe calkowita dla y: ";
-    while (!(cin >> y) || cin.peek() != '\n') {
-        cout << "Podano nieprawidlowa wartosc. y musi byc liczba calkowita." << endl;
-        cin.clear();
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    if (variables.count('y')) {
         cout << "Podaj liczbe calkowita dla y: ";
+        while (!(cin >> y) || cin.peek() != '\n') {
+            cout << "Podano nieprawidlowa wartosc. y musi byc liczba calkowita." << endl;
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Podaj liczbe calkowita dla y: ";
+        }
     }
 
-    // Pobieranie z
-    cout << "Podaj liczbe calkowita dla z: ";
-    while (!(cin >> z) || cin.peek() != '\n') {
-        cout << "Podano nieprawidlowa wartosc. z musi byc liczba calkowita." << endl;
-        cin.clear();
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    if (variables.count('z')) {
         cout << "Podaj liczbe calkowita dla z: ";
+        while (!(cin >> z) || cin.peek() != '\n') {
+            cout << "Podano nieprawidlowa wartosc. z musi byc liczba calkowita." << endl;
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Podaj liczbe calkowita dla z: ";
+        }
     }
     return make_tuple(x, y, z);
 }
@@ -289,7 +306,7 @@ int main(){
     saveFile(fixedExpression);
     string readExpression = readFile();
     cout << "WYGENEROWANE WYRAZENIE: " << readExpression;
-    tie(x, y, z) = xyzValues();
+    tie(x, y, z) = xyzValues(fixedExpression);
     vector<char> rpn_expression = infixToRPN(fixedExpression);
     double result = evaluateRPN(rpn_expression, x, y, z);
     cout << result;
