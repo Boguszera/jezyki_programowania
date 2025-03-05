@@ -110,12 +110,12 @@ vector<char> fixExpression(const vector<char>& expression, int elements) {
     return fixedExpression;
     }
 
-    set<char> getVariables(const vector<char>& expression) {
-    set<char> variables;
-    for (char c : expression) {
-        if (c == 'x' || c == 'y' || c == 'z') {
-            variables.insert(c);
-        }
+set<char> getVariables(const vector<char>& expression) {
+        set<char> variables;
+        for (char c : expression) {
+            if (c == 'x' || c == 'y' || c == 'z') {
+                variables.insert(c);
+            }
     }
     return variables;
 }
@@ -123,7 +123,7 @@ vector<char> fixExpression(const vector<char>& expression, int elements) {
 //funkcja s³u¿¹ca do interakcji z u¿ytkownikiem i walidacji inputa
 int userInput() {
     int numberOfElements;
-    bool success = false;
+    //bool success = false;
 
     cout << "Podaj ilosc elementow: ";
     while (true) {
@@ -174,6 +174,7 @@ void saveFile(vector<char> expression){
         }
     file.close();
 }
+
 string readFile(){
     fstream file;
     string readExpression;
@@ -205,7 +206,7 @@ tuple<int, int, int> xyzValues(const vector<char>& expression){
     }
 
     if (variables.count('y')) {
-        cout << "Podaj liczbe calkowita dla y: ";
+        cout << "\nPodaj liczbe calkowita dla y: ";
         while (!(cin >> y) || cin.peek() != '\n') {
             cout << "Podano nieprawidlowa wartosc. y musi byc liczba calkowita." << endl;
             cin.clear();
@@ -215,7 +216,7 @@ tuple<int, int, int> xyzValues(const vector<char>& expression){
     }
 
     if (variables.count('z')) {
-        cout << "Podaj liczbe calkowita dla z: ";
+        cout << "\nPodaj liczbe calkowita dla z: ";
         while (!(cin >> z) || cin.peek() != '\n') {
             cout << "Podano nieprawidlowa wartosc. z musi byc liczba calkowita." << endl;
             cin.clear();
